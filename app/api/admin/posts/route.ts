@@ -4,6 +4,9 @@ import { requireAdmin } from "@/lib/session";
 import { arabicSlug } from "@/lib/utils";
 import { postSchema } from "@/lib/validators";
 
+// Force Node.js runtime for Prisma compatibility
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   try {
     const session = await requireAdmin();

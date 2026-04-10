@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validators";
 import { Role } from "@prisma/client";
 
+// Force Node.js runtime for bcryptjs and Prisma compatibility
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();

@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { loginSchema } from "@/lib/validators";
 import { Role } from "@prisma/client";
 
+// Force Node.js runtime for bcryptjs and Prisma compatibility
+export const runtime = "nodejs";
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {

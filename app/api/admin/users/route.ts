@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/session";
 import { Role } from "@prisma/client";
 
+// Force Node.js runtime for Prisma compatibility
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   try {
     await requireAdmin();

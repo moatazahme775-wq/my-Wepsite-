@@ -4,10 +4,22 @@ import { RightSidebar } from "@/components/right-sidebar";
 import { NewsletterForm } from "@/components/newsletter-form";
 
 export default async function HomePage() {
-  const [{ recentPosts, featuredPosts }, { categories }] = await Promise.all([
-    getHomeData(),
-    getSiteData()
-  ]);
+  let recentPosts: any[] = [];
+  let featuredPosts: any[] = [];
+  let categories: any[] = [];
+
+  try {
+    const [homeData, siteData] = await Promise.all([
+      getHomeData(),
+      getSiteData()
+    ]);
+    recentPosts = homeData.recentPosts;
+    featuredPosts = homeData.featuredPosts;
+    categories = siteData.categories;
+  } catch (error) {
+    // Fallback during build time when DATABASE_URL is not available
+    console.warn("Failed to fetch home data:", error);
+  }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px,1fr]">
