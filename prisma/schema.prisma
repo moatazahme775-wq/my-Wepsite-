@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  AUTHOR
+  SUBSCRIBER
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id             String       @id @default(cuid())
+  name           String?
+  email          String       @unique
+  passwordHash   String
+  role           Role         @default(SUBSCRIBER)
+  bio            String?
+  image          String?
+  posts          Post[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  order       Int       @default(0)
+  inMenu      Boolean   @default(true)
+  posts       Post[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Post {
+  id             String      @id @default(cuid())
+  title          String
+  slug           String      @unique
+  excerpt        String
+  quote          String?
+  coverImage     String?
+  content        String      @db.Text
+  status         PostStatus  @default(DRAFT)
+  featured       Boolean     @default(false)
+  seoTitle       String?
+  seoDescription String?
+  publishedAt    DateTime?
+  authorId       String
+  author         User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  categoryId     String
+  category       Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SiteSetting {
+  id              String   @id @default("site")
+  siteName        String   @default("معتز العلقمي")
+  siteDescription String   @default("مدونة عربية احترافية متنوعة.")
+  logoUrl         String?
+  facebookUrl     String?
+  xUrl            String?
+  instagramUrl    String?
+  youtubeUrl      String?
+  copyrightText   String   @default("© جميع الحقوق محفوظة")
+  marqueeItems    String[] @default(["أدبي", "علمية", "ثقافية", "صحية", "متنوعة"])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
