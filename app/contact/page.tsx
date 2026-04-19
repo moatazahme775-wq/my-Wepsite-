@@ -1,13 +1,20 @@
+export const metadata = {
+  title: "اتصل بنا"
+};
+
 export default function ContactPage() {
   return (
-    <section className="mx-auto max-w-4xl rounded-3xl bg-white p-8 shadow-sm">
-      <h1 className="mb-4 text-3xl font-bold">تواصل معنا</h1>
-      <form className="grid gap-4">
-        <input className="h-12 rounded-2xl border px-4" placeholder="الاسم" />
-        <input className="h-12 rounded-2xl border px-4" type="email" placeholder="البريد الإلكتروني" />
-        <textarea className="min-h-40 rounded-2xl border px-4 py-3" placeholder="رسالتك" />
-        <button className="w-fit rounded-2xl bg-brand-700 px-6 py-3 text-white">إرسال</button>
+    <main className="mx-auto max-w-3xl px-4 py-12">
+      <h1 className="text-4xl font-bold">اتصل بنا</h1>
+      <form action="/api/contact" method="POST" className="mt-8 grid gap-4">
+        <input name="name" placeholder="الاسم" className="rounded-2xl border border-zinc-300 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900" required />
+        <input name="email" type="email" placeholder="البريد الإلكتروني" className="rounded-2xl border border-zinc-300 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900" required />
+        <input name="subject" placeholder="الموضوع" className="rounded-2xl border border-zinc-300 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900" required />
+        <textarea name="message" placeholder="رسالتك" className="min-h-40 rounded-2xl border border-zinc-300 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900" required />
+        <button className="rounded-full bg-zinc-900 px-5 py-3 text-white dark:bg-white dark:text-zinc-900">
+          إرسال
+        </button>
       </form>
-    </section>
+    </main>
   );
 }

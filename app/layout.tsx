@@ -1,53 +1,48 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "sonner";
-import { getSiteData } from "@/lib/data";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import "@/styles/globals.css";
+import { siteConfig } from "@/lib/seo";
+import { SiteHeader } from "@/components/site/header";
+import { SiteFooter } from "@/components/site/footer";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700"]
+  variable: "--font-cairo"
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  try {
-    const { settings } = await getSiteData();
-    return {
-      title: settings?.siteName ?? "معتز العلقمي",
-      description: settings?.siteDescription ?? "مدونة عربية احترافية",
-      metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000")
-    };
-  } catch (error) {
-    // Fallback during build time when DATABASE_URL is not available
-    return {
-      title: "معتز العلقمي",
-      description: "مدونة عربية احترافية",
-      metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000")
-    };
+export const metadata: Metadata = {
+  title: {
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.name}`
+  },
+  description: siteConfig.description,
+  metadataBase: new URL(siteConfig.url),
+  openGraph: {
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    locale: "ar_SA",
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description
   }
-}
+};
 
-export default async function RootLayout({
+export default function RootLayout({
   children
-}: Readonly<{ children: React.ReactNode }>) {
-  let siteData: Awaited<ReturnType<typeof getSiteData>> = { settings: null, categories: [] };
-  
-  try {
-    siteData = await getSiteData();
-  } catch (error) {
-    // Fallback during build time when DATABASE_URL is not available
-    console.warn("Failed to fetch site data:", error);
-  }
-
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="ar" dir="rtl">
-      <body className={cairo.className}>
-        <Header siteData={siteData} />
-        <main className="mx-auto min-h-screen max-w-7xl px-4 py-6">{children}</main>
-        <Footer settings={siteData.settings} />
-        <Toaster richColors position="top-center" />
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body className={cairo.variable}>
+        <SiteHeader />
+        {children}
+        <SiteFooter />
       </body>
     </html>
   );

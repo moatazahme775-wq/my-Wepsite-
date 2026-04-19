@@ -1,19 +1,21 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
-import { prisma } from "@/lib/prisma";
-import type { Metadata } from "next";
+import { prisma } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params
 }: {
   params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+}) {
   const { slug } = await params;
   const post = await prisma.post.findUnique({ where: { slug } });
+
   if (!post) return {};
+
   return {
     title: post.seoTitle || post.title,
-    description: post.seoDescription || post.excerpt
+    description: post.seoDescription || post.excerpt || ""
   };
 }
 
@@ -26,52 +28,48 @@ export default async function PostPage({
 
   const post = await prisma.post.findUnique({
     where: { slug },
-    include: { author: true, category: true }
+    include: {
+      category: true,
+      author: true,
+      postTags: { include: { tag: true } },
+      comments: {
+        where: { status: "approved", replyToId: null },
+        include: { replies: true }
+      }
+    }
   });
 
-  if (!post || post.status !== "PUBLISHED") notFound();
+  if (!post) notFound();
 
   return (
-    <article className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="relative h-72 w-full md:h-96">
-        <Image
-          src={post.coverImage || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop"}
-          alt={post.title}
-          fill
-          className="object-cover"
-        />
-      </div>
-      <div className="space-y-6 p-6 md:p-10">
-        <div className="space-y-3">
-          <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-sm text-brand-800">
-            {post.category.name}
-          </span>
-          <h1 className="text-3xl font-bold md:text-4xl">{post.title}</h1>
-          <p className="text-lg text-slate-600">{post.excerpt}</p>
+    <main className="mx-auto max-w-4xl px-4 py-12">
+      <p className="text-sm text-brand-700 dark:text-brand-300">
+        {post.category?.name ?? "عام"}
+      </p>
+      <h1 className="mt-2 text-4xl font-bold">{post.title}</h1>
+      {post.excerpt ? (
+        <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-300">{post.excerpt}</p>
+      ) : null}
+
+      <article
+        className="prose prose-zinc mt-8 max-w-none dark:prose-invert"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
+
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold">التعليقات</h2>
+        <div className="mt-6 space-y-4">
+          {post.comments.map((comment) => (
+            <div key={comment.id} className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+              <p className="font-medium">{comment.name ?? "زائر"}</p>
+              <p className="mt-2 text-zinc-600 dark:text-zinc-300">{comment.content}</p>
+            </div>
+          ))}
+          {post.comments.length === 0 ? (
+            <p className="text-zinc-600 dark:text-zinc-300">لا توجد تعليقات معتمدة بعد.</p>
+          ) : null}
         </div>
-
-        <div className="flex items-center gap-3">
-          <Image
-            src={post.author.image || "https://ui-avatars.com/api/?name=Author&background=f3f4f6"}
-            alt={post.author.name || "كاتب"}
-            width={50}
-            height={50}
-            className="rounded-full object-cover"
-          />
-          <div>
-            <p className="font-semibold">{post.author.name}</p>
-            <p className="text-sm text-slate-500">{new Date(post.publishedAt || post.createdAt).toLocaleDateString("ar-EG")}</p>
-          </div>
-        </div>
-
-        {post.quote ? (
-          <blockquote className="rounded-2xl border-r-4 border-brand-500 bg-brand-50 px-5 py-4 text-lg">
-            {post.quote}
-          </blockquote>
-        ) : null}
-
-        <div className="prose-ar max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
-      </div>
-    </article>
+      </section>
+    </main>
   );
 }
